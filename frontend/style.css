@@ -1,0 +1,64 @@
+:root {
+  --navy: #1f3864;
+  --light: #dce6f1;
+  --grey: #f2f2f2;
+  --red: #c0392b;
+  --green: #2e7d32;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  background: var(--grey);
+  color: #222;
+}
+
+header {
+  background: var(--navy);
+  color: white;
+  padding: 1.5rem 2rem;
+}
+
+header h1 { margin: 0; }
+header p { margin: 0.25rem 0 0; opacity: 0.85; }
+
+main {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: grid;
+  gap: 1.5rem;
+}
+
+section {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+button {
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+button:hover { opacity: 0.9; }
+
+#results, #receipt-output {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--light);
+  border-radius: 6px;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+.status-verified { color: var(--green); font-weight: bold; }
+.status-rejected { color: var(--red); font-weight: bold; }

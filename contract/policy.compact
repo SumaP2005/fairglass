@@ -1,0 +1,12 @@
+// FairGlass fairness-policy contract — SKELETON
+// Owner: Lastos
+// Fill in using the official Midnight starter-kit template as a base.
+
+// Policy definition (locked Friday night):
+//   allowed:   skills, experience_years
+//   forbidden: name, age, gender
+
+// TODO: define the policy struct
+// TODO: define verify_proof(proof, policyHash) -> bool
+// TODO: define emit FairnessReceipt(policyHash, decision, timestamp)
+// TODO: reject any proof derived from a forbidden attribute

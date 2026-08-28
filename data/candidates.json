@@ -1,0 +1,42 @@
+[
+  {
+    "id": "c1",
+    "name": "Fake Candidate A",
+    "age": 29,
+    "gender": "female",
+    "skills": ["python", "react", "sql"],
+    "experience_years": 3
+  },
+  {
+    "id": "c2",
+    "name": "Fake Candidate B",
+    "age": 45,
+    "gender": "male",
+    "skills": ["python"],
+    "experience_years": 0
+  },
+  {
+    "id": "c3",
+    "name": "Fake Candidate C",
+    "age": 34,
+    "gender": "non-binary",
+    "skills": ["react", "sql", "javascript"],
+    "experience_years": 2
+  },
+  {
+    "id": "c4",
+    "name": "Fake Candidate D",
+    "age": 51,
+    "gender": "male",
+    "skills": ["python", "sql"],
+    "experience_years": 5
+  },
+  {
+    "id": "c5",
+    "name": "Fake Candidate E",
+    "age": 23,
+    "gender": "female",
+    "skills": ["javascript"],
+    "experience_years": 1
+  }
+]

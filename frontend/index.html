@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairGlass — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>FairGlass</h1>
+    <p>Proof-of-Fair AI Hiring — policy, screening, and receipts</p>
+  </header>
+
+  <main>
+    <section id="policy-panel">
+      <h2>Fairness Policy</h2>
+      <ul>
+        <li>Allowed: skills, experience</li>
+        <li>Forbidden: name, age, gender</li>
+      </ul>
+    </section>
+
+    <section id="screening-panel">
+      <h2>Screening</h2>
+      <button id="run-fair">Run Fair Model</button>
+      <button id="run-biased">Run Biased Model</button>
+      <div id="results"></div>
+    </section>
+
+    <section id="receipt-panel">
+      <h2>Fairness Receipt</h2>
+      <div id="receipt-output">No receipt yet.</div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
