@@ -38,5 +38,45 @@
     "gender": "female",
     "skills": ["javascript"],
     "experience_years": 1
+  },
+  {
+    "id": "c6",
+    "name": "Fake Candidate F",
+    "age": 38,
+    "gender": "female",
+    "skills": ["java", "spring boot", "aws"],
+    "experience_years": 12
+  },
+  {
+    "id": "c7",
+    "name": "Fake Candidate G",
+    "age": 27,
+    "gender": "non-binary",
+    "skills": ["python", "django", "docker", "kubernetes"],
+    "experience_years": 4
+  },
+  {
+    "id": "c8",
+    "name": "Fake Candidate H",
+    "age": 42,
+    "gender": "male",
+    "skills": ["c++", "rust", "linux", "embedded systems"],
+    "experience_years": 15
+  },
+  {
+    "id": "c9",
+    "name": "Fake Candidate I",
+    "age": 31,
+    "gender": "female",
+    "skills": ["typescript", "react", "node.js", "graphql"],
+    "experience_years": 6
+  },
+  {
+    "id": "c10",
+    "name": "Fake Candidate J",
+    "age": 25,
+    "gender": "male",
+    "skills": ["swift", "objective-c", "ios development"],
+    "experience_years": 2
   }
 ]
