@@ -10,3 +10,51 @@
 // TODO: define verify_proof(proof, policyHash) -> bool
 // TODO: define emit FairnessReceipt(policyHash, decision, timestamp)
 // TODO: reject any proof derived from a forbidden attribute
+pragma language_version >= 0.22;
+import CompactStandardLibrary;
+
+// 1. Private data structure for the candidate (Allowed vs Forbidden attributes)
+struct CandidateMetrics {
+    idCommitment: Bytes<32>,
+    skillsScore: Uint<32>,       // Allowed
+    experienceYears: Uint<32>,   // Allowed
+    usedForbiddenData: Boolean   // Forbidden flag (name, age, gender)
+}
+
+// 2. The receipt event structure (policy hash, decision, timestamp — no personal data)
+struct FairnessReceipt {
+    policyHash: Bytes<32>,
+    decision: Boolean,
+    timestamp: Uint<64>
+}
+
+// Public Ledger State
+export ledger activePolicyHash: Bytes<32>;
+export ledger receipts: Map<Bytes<32>, FairnessReceipt>;
+
+// Witnesses (Data fetched locally from Donalsien's Python backend)
+witness getInitialPolicyHash(): Bytes<32>;
+witness getCandidateMetrics(): CandidateMetrics;
+witness getCurrentTimestamp(): Uint<64>;
+
+constructor() {
+    activePolicyHash = disclose(getInitialPolicyHash());
+}
+
+// 3 & 4. The Circuit: Verifies decision, rejects forbidden attributes, and issues receipt
+export circuit submitDecision(decision: Boolean): [] {
+    const metrics = getCandidateMetrics();
+
+    // GATE: Reject any proof derived from a forbidden attribute (Biased-model demo moment)
+    assert(metrics.usedForbiddenData == false, "BIAS DETECTED: Forbidden attributes (name, age, gender) were used");
+
+    // Create the receipt event object
+    const receipt = FairnessReceipt {
+        policyHash: activePolicyHash,
+        decision: decision,
+        timestamp: getCurrentTimestamp()
+    };
+    
+    // Store receipt securely on the public ledger
+    receipts.insert(disclose(metrics.idCommitment), disclose(receipt));
+}
