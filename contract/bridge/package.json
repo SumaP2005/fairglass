@@ -1,0 +1,23 @@
+{
+  "name": "fairglass-proof-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Node bridge between the Flask backend and Midnight. Spawned by backend/app.py when MOCK_PROOF=0.",
+  "main": "prove.js",
+  "scripts": {
+    "smoke": "node smoke.js"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-http-client-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-level-private-state-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-node-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/wallet-sdk": "1.1.0",
+    "ws": "8.21.3"
+  }
+}
