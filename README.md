@@ -93,6 +93,12 @@ plan, so trust this table over the doc where they differ.
 
 All seed data in `data/` must be synthetic. No real names, no real resumes.
 
+## Running the demo for judges
+
+`docs/DEMO_RUNBOOK.md` has the pre-flight checks, the click order, what each
+screen proves, what to do if something breaks mid-run, and the answers to the
+questions judges are most likely to ask.
+
 ## Privacy design: what the ledger actually stores
 
 The claim is "show proof, not data". Here is what backs it.
