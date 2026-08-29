@@ -69,3 +69,83 @@ button:hover { opacity: 0.9; }
   word-break: break-all;
   opacity: 0.85;
 }
+
+/* --- Status badges (header) --- */
+#status-bar {
+  margin-top: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.status-pill.status-ok { background: rgba(46, 125, 50, 0.35); }
+.status-pill.status-down { background: rgba(192, 57, 43, 0.35); }
+.status-pill.status-unknown { background: rgba(255, 255, 255, 0.15); }
+
+/* --- Policy panel --- */
+.hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+  word-break: break-all;
+}
+
+/* --- Screening panel: skills input + buttons --- */
+#screening-panel label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  opacity: 0.8;
+}
+
+#required-skills {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  font-family: inherit;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* --- Decision list --- */
+.decision-list {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.decision-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.decision-row.decision-shortlist {
+  background: rgba(46, 125, 50, 0.12);
+  border: 1px solid rgba(46, 125, 50, 0.3);
+}
+
+.decision-row.decision-reject {
+  background: rgba(192, 57, 43, 0.12);
+  border: 1px solid rgba(192, 57, 43, 0.3);
+}
+
+.decision-id { font-weight: 600; }
+.decision-badge { font-size: 0.9rem; }
