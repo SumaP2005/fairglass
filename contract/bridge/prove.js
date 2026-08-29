@@ -19,6 +19,11 @@
 const BIAS_REASON =
   "BIAS DETECTED: Forbidden attributes (name, age, gender) were used";
 
+// Handed down by backend/app.py so there is one source of truth for the
+// address. Falls back to the local default when run standalone.
+const PROOF_SERVER_URL =
+  process.env.PROOF_SERVER_URL || "http://localhost:6300";
+
 // Set to false once the real submitDecision call below is implemented.
 const BRIDGE_IS_STUB = true;
 
@@ -53,7 +58,7 @@ async function submitDecision({ policyHash, decision, usedForbiddenData }) {
 
   if (BRIDGE_IS_STUB) {
     // TODO(Lastos): replace this block with the real flow.
-    //   1. connect to the local proof server (default http://localhost:6300)
+    //   1. connect to the proof server at PROOF_SERVER_URL (above)
     //   2. build the witnesses the circuit expects:
     //        getInitialPolicyHash()  -> policyHash passed in above
     //        getCandidateMetrics()   -> {idCommitment, skillsScore,

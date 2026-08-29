@@ -20,6 +20,8 @@ import os
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -47,11 +49,28 @@ POLICY_HASH = "0x" + hashlib.sha256(
 ).hexdigest()
 
 MOCK_PROOF = os.environ.get("MOCK_PROOF", "1") == "1"
+PROOF_SERVER_URL = os.environ.get("PROOF_SERVER_URL", "http://localhost:6300")
 
 # The role being hired for. Not part of the fairness policy: these are all
 # allowed attributes, so changing them cannot make a decision unfair.
 DEFAULT_REQUIRED_SKILLS = ["python", "react", "sql"]
 BIAS_REASON = "BIAS DETECTED: Forbidden attributes (name, age, gender) were used"
+
+
+def proof_server_status(timeout=2.0):
+    """Report whether the Midnight proof server is reachable.
+
+    Never raises. On Saturday the first question when something breaks will be
+    "is the proof server even up", and this is what answers it.
+    """
+    url = f"{PROOF_SERVER_URL.rstrip('/')}/health"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as resp:
+            return "up" if resp.status == 200 else f"unexpected status {resp.status}"
+    except urllib.error.URLError as e:
+        return f"down ({e.reason})"
+    except Exception as e:  # socket timeouts and anything else
+        return f"down ({e})"
 
 
 def load_candidates():
@@ -119,6 +138,7 @@ def real_proof(model, decisions):
             capture_output=True,
             text=True,
             timeout=180,
+            env={**os.environ, "PROOF_SERVER_URL": PROOF_SERVER_URL},
         )
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         return {
@@ -196,7 +216,12 @@ def candidates():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "proofMode": "mock" if MOCK_PROOF else "real"})
+    return jsonify({
+        "status": "ok",
+        "proofMode": "mock" if MOCK_PROOF else "real",
+        "proofServerUrl": PROOF_SERVER_URL,
+        "proofServer": proof_server_status(),
+    })
 
 
 if __name__ == "__main__":

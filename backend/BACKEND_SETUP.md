@@ -48,6 +48,21 @@ The proof step is controlled by the MOCK_PROOF environment variable.
 Windows: `set MOCK_PROOF=0` (cmd) or `$env:MOCK_PROOF="0"` (PowerShell).
 Linux/Mac: `MOCK_PROOF=0 python app.py`.
 
+`PROOF_SERVER_URL` sets where the proof server lives, default
+`http://localhost:6300`. The backend uses it for the health check and passes it
+down to the bridge, so if Lastos hosts the proof server instead of each of us
+running one, that variable is the only thing that changes.
+
+Start the proof server with Docker:
+
+```
+docker run --name fairglass-proof -p 6300:6300 midnightnetwork/proof-server -- midnight-proof-server --network testnet
+```
+
+First run downloads the zero-knowledge parameters, which takes a while. After
+that, reuse the same container with `docker start fairglass-proof` rather than
+`docker run`, which would build a new one and fetch the parameters again.
+
 Both modes enforce the same rule: a biased decision must not verify.
 
 ## 4. Endpoints
@@ -57,7 +72,7 @@ Both modes enforce the same rule: a biased decision must not verify.
 | POST | `/screen?model=fair` or `?model=biased` | Run the full pipeline, return decisions + receipt |
 | GET | `/policy` | The locked policy and its hash |
 | GET | `/candidates` | Candidate pool, allowed attributes only |
-| GET | `/health` | Liveness check, shows active proof mode |
+| GET | `/health` | Liveness check: proof mode, proof server address, and whether it is reachable |
 
 The `/screen` body is optional. Send `{"required_skills": ["java", "aws"]}` to
 screen for a different role. Skills and experience are allowed attributes, so

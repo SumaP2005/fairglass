@@ -81,8 +81,24 @@ check("/candidates hides forbidden attributes", not leaked, f"leaked: {leaked}" 
 check("policy hash is stable across calls",
       client.get("/policy").get_json()["policyHash"] == POLICY_HASH)
 check("bad model name returns 400", client.post("/screen?model=nonsense").status_code == 400)
-check("health endpoint reports mode",
-      client.get("/health").get_json()["proofMode"] in ("mock", "real"))
+health = client.get("/health").get_json()
+print()
+print(f"health: {json.dumps(health)}")
+check("health endpoint reports mode", health["proofMode"] in ("mock", "real"))
+check("health reports the proof server address", "proofServerUrl" in health)
+check("health reports proof server reachability", "proofServer" in health,
+      health.get("proofServer", "missing"))
+
+# The check must degrade gracefully, not raise, when nothing is listening.
+import app as app_module
+_saved = app_module.PROOF_SERVER_URL
+app_module.PROOF_SERVER_URL = "http://localhost:59999"
+down = app_module.proof_server_status(timeout=1.0)
+app_module.PROOF_SERVER_URL = _saved
+print(f"unreachable proof server reports: {down}")
+check("unreachable proof server reports down", down.startswith("down"))
+check("health still returns 200 when proof server is down",
+      client.get("/health").status_code == 200)
 
 # --- CORS: the frontend runs on a different port than this service --------
 cors = client.post("/screen?model=fair", headers={"Origin": "http://localhost:8080"})
