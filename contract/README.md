@@ -9,6 +9,13 @@ Owner: Lastos
 2. Run the local Midnight proof server (`midnight-proof-server` or whatever
    the starter kit provides) and keep it running all weekend.
 3. Write the policy contract in `policy.compact` (see skeleton below).
+## Compiler/runtime compatibility
+
+This contract must be compiled with Compact 0.31.1.
+
+Compact 0.34.0 generates contract code targeting `@midnight-ntwrk/compact-runtime` 0.19.0, which is incompatible with the project's Midnight.js 4.1.1 setup using compact-runtime 0.16.0.
+
+The committed `build/` directory was generated with Compact 0.31.1 and its generated `contract/index.js` targets compact-runtime 0.16.0.
 
 ## Policy schema (locked Friday night, do not change without telling everyone)
 
