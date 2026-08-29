@@ -82,26 +82,79 @@ function renderReceipt(data) {
     receiptEl.textContent = "No receipt returned.";
     return;
   }
+
   const r = data.receipt;
   receiptEl.textContent = "";
 
+  const certificate = document.createElement("article");
+  certificate.className = "certificate";
+
+  const header = document.createElement("div");
+  header.className = "certificate-header";
+
+  const titleWrap = document.createElement("div");
+  const eyebrow = document.createElement("div");
+  eyebrow.className = "certificate-eyebrow";
+  eyebrow.textContent = "FairGlass";
+
+  const title = document.createElement("h3");
+  title.className = "certificate-title";
+  title.textContent = r.verified ? "Certificate of Fair Screening" : "Screening Review Outcome";
+
+  titleWrap.appendChild(eyebrow);
+  titleWrap.appendChild(title);
+
   const badge = document.createElement("span");
-  badge.className = r.verified ? "status-verified" : "status-rejected";
-  badge.textContent = r.verified ? "✓ VERIFIED" : "✗ REJECTED";
-  receiptEl.appendChild(badge);
+  badge.className = r.verified ? "certificate-status verified" : "certificate-status rejected";
+  badge.textContent = r.verified ? "Verified" : "Rejected";
 
-  // textContent, not innerHTML: a reason string coming back from the contract
-  // must never be able to inject markup into the page.
-  const lines = r.verified
-    ? [`Policy: ${r.policyHash}`, `Receipt: ${r.receiptId}`]
-    : [r.reason || "Policy violation detected", `Policy: ${r.policyHash}`];
+  header.appendChild(titleWrap);
+  header.appendChild(badge);
 
-  for (const line of lines) {
-    const div = document.createElement("div");
-    div.className = "receipt-line";
-    div.textContent = line;
-    receiptEl.appendChild(div);
+  const subheading = document.createElement("p");
+  subheading.className = "certificate-subtitle";
+  subheading.textContent = r.verified
+    ? "This screening result has been attested under the active fairness policy."
+    : "This screening result failed verification under the active fairness policy.";
+
+  const info = document.createElement("div");
+  info.className = "certificate-grid";
+
+  const fields = [
+    ["Model", data.model || "unknown"],
+    ["Required skills", (data.requiredSkills || []).join(", ") || "Not provided"],
+    ["Receipt ID", r.receiptId || "n/a"],
+    ["Policy hash", r.policyHash || "n/a"],
+    ["Outcome", r.verified ? "Pass" : "Fail"],
+    ["Reason", r.verified ? "Verified against policy" : r.reason || "Policy violation detected"],
+  ];
+
+  for (const [label, value] of fields) {
+    const item = document.createElement("div");
+    item.className = "certificate-item";
+
+    const key = document.createElement("span");
+    key.className = "certificate-label";
+    key.textContent = label;
+
+    const val = document.createElement("strong");
+    val.className = "certificate-value";
+    val.textContent = value;
+
+    item.appendChild(key);
+    item.appendChild(val);
+    info.appendChild(item);
   }
+
+  const seal = document.createElement("div");
+  seal.className = "certificate-seal";
+  seal.textContent = r.verified ? "✓" : "✕";
+
+  certificate.appendChild(header);
+  certificate.appendChild(subheading);
+  certificate.appendChild(info);
+  certificate.appendChild(seal);
+  receiptEl.appendChild(certificate);
 }
 
 document.getElementById("run-fair").addEventListener("click", () => runScreening("fair"));
