@@ -2,59 +2,184 @@
 FairGlass backend service.
 Owner: Donalsien (KADHACK)
 
-Responsibilities:
-  1. Load seeded candidates from ../data/candidates.json
-  2. Run the requested scorer (fair or biased) from ../scoring/
-  3. Call the Midnight proof CLI / proof server to generate a ZK proof
-  4. Submit the proof to the Compact contract and return the receipt
+Pipeline per /screen call:
+  candidates -> scorer (fair|biased) -> proof step -> receipt
 
-This file is a skeleton — fill in the TODOs during the hackathon.
+Proof step modes (MOCK_PROOF env var, defaults to mock):
+  MOCK_PROOF=1  simulate the contract's policy gate locally, instant receipt
+  MOCK_PROOF=0  shell out to the Node bridge (contract/bridge/prove.js), which
+                talks to the Midnight proof server and the deployed contract
+
+Both modes enforce the same rule the Compact circuit enforces on-chain:
+a decision derived from a forbidden attribute must NOT verify.
 """
 
+import hashlib
 import json
 import os
+import subprocess
+import sys
+import time
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app)  # allow the plain-HTML frontend to call this during dev
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(BASE_DIR)
+DATA_PATH = os.path.join(REPO_ROOT, "data", "candidates.json")
+BRIDGE_PATH = os.path.join(REPO_ROOT, "contract", "bridge", "prove.js")
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "candidates.json")
+sys.path.insert(0, REPO_ROOT)
+from scoring import fair_scorer, biased_scorer  # noqa: E402
+
+app = Flask(__name__)
+CORS(app)
+
+# Single source of truth for the locked policy. The hash is deterministic:
+# same policy, same hash, on every machine. The contract stores the same value.
+POLICY = {
+    "version": "v1",
+    "allowed": ["skills", "experience_years"],
+    "forbidden": ["name", "age", "gender"],
+}
+POLICY_HASH = "0x" + hashlib.sha256(
+    json.dumps(POLICY, sort_keys=True).encode()
+).hexdigest()
+
+MOCK_PROOF = os.environ.get("MOCK_PROOF", "1") == "1"
+BIAS_REASON = "BIAS DETECTED: Forbidden attributes (name, age, gender) were used"
 
 
 def load_candidates():
-    with open(DATA_PATH) as f:
+    with open(DATA_PATH, encoding="utf-8") as f:
         return json.load(f)
+
+
+def run_scorer(model, candidates):
+    if model == "biased":
+        return biased_scorer.score_candidates(candidates)
+    return fair_scorer.score_candidates(candidates)
+
+
+def used_forbidden_data(decisions):
+    # The biased scorer tags its output; the fair scorer never does.
+    return any("used_forbidden_attribute" in d for d in decisions)
+
+
+def receipt_id(decisions, ts):
+    payload = json.dumps(decisions, sort_keys=True) + str(ts)
+    return "0x" + hashlib.sha256(payload.encode()).hexdigest()[:16]
+
+
+def mock_proof(model, decisions):
+    """Local stand-in for the contract's submitDecision circuit."""
+    ts = int(time.time())
+    if used_forbidden_data(decisions):
+        return {
+            "verified": False,
+            "policyHash": POLICY_HASH,
+            "model": model,
+            "proofMode": "mock",
+            "reason": BIAS_REASON,
+            "timestamp": ts,
+        }
+    return {
+        "verified": True,
+        "policyHash": POLICY_HASH,
+        "model": model,
+        "proofMode": "mock",
+        "receiptId": receipt_id(decisions, ts),
+        "timestamp": ts,
+    }
+
+
+def real_proof(model, decisions):
+    """Bridge to Midnight: prove.js reads JSON on stdin, prints JSON on stdout.
+
+    Contract with Lastos:
+      in:  {policyHash, decision, usedForbiddenData}
+      out: {verified, receiptId, txHash, reason?}
+    A failed circuit assert (bias gate) exits non-zero with the reason on stderr.
+    """
+    payload = {
+        "policyHash": POLICY_HASH,
+        "decision": any(d["decision"] == "shortlist" for d in decisions),
+        "usedForbiddenData": used_forbidden_data(decisions),
+    }
+    ts = int(time.time())
+    try:
+        result = subprocess.run(
+            ["node", BRIDGE_PATH],
+            input=json.dumps(payload),
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+    except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+        return {
+            "verified": False,
+            "policyHash": POLICY_HASH,
+            "model": model,
+            "proofMode": "real",
+            "reason": f"proof bridge unavailable: {e}",
+            "timestamp": ts,
+        }
+
+    if result.returncode != 0:
+        return {
+            "verified": False,
+            "policyHash": POLICY_HASH,
+            "model": model,
+            "proofMode": "real",
+            "reason": result.stderr.strip() or BIAS_REASON,
+            "timestamp": ts,
+        }
+
+    bridge_out = json.loads(result.stdout)
+    bridge_out.update({
+        "policyHash": POLICY_HASH,
+        "model": model,
+        "proofMode": "real",
+        "timestamp": ts,
+    })
+    return bridge_out
 
 
 @app.route("/screen", methods=["POST"])
 def screen():
-    model = request.args.get("model", "fair")  # "fair" or "biased"
+    model = request.args.get("model", "fair")
+    if model not in ("fair", "biased"):
+        return jsonify({"error": "model must be 'fair' or 'biased'"}), 400
+
     candidates = load_candidates()
+    decisions = run_scorer(model, candidates)
+    receipt = mock_proof(model, decisions) if MOCK_PROOF else real_proof(model, decisions)
 
-    # TODO(sumap): import and call the real scorer from ../scoring/
-    # from scoring.fair_scorer import score_candidates
-    # from scoring.biased_scorer import score_candidates_biased
-    # decisions = score_candidates(candidates) if model == "fair" else score_candidates_biased(candidates)
-    decisions = {"placeholder": True, "model": model, "count": len(candidates)}
+    return jsonify({"model": model, "decisions": decisions, "receipt": receipt})
 
-    # TODO(Lastos/Donalsien): call the proof CLI here and get a real proof
-    # proof = generate_proof(decisions)
-    # verified = submit_to_contract(proof)
-    verified = model == "fair"  # placeholder logic until proof flow is wired
 
-    receipt = {
-        "verified": verified,
-        "policyHash": "TODO-real-hash-once-contract-deployed",
-        "model": model,
-    }
+@app.route("/policy", methods=["GET"])
+def policy():
+    return jsonify({"policy": POLICY, "policyHash": POLICY_HASH})
 
-    return jsonify({"decisions": decisions, "receipt": receipt})
+
+@app.route("/candidates", methods=["GET"])
+def candidates():
+    # Expose only id + allowed attributes: the API itself respects the policy.
+    safe = [
+        {
+            "id": c["id"],
+            "skills": c.get("skills", []),
+            "experience_years": c.get("experience_years", 0),
+        }
+        for c in load_candidates()
+    ]
+    return jsonify(safe)
 
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "proofMode": "mock" if MOCK_PROOF else "real"})
 
 
 if __name__ == "__main__":
