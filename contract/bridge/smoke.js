@@ -44,7 +44,12 @@ console.log("=".repeat(66));
 const ok = await runBridge({
   policyHash: "0xtest",
   decision: true,
-  usedForbiddenData: false,
+  candidateMetrics: {
+    idCommitment: "0xdeadbeef",
+    skillsScore: 3,
+    experienceYears: 3,
+    usedForbiddenData: false,
+  },
 });
 console.log("\ncompliant ->", ok.out || "(no output)");
 check("compliant call exits 0", ok.code === 0, `exit ${ok.code}`);
@@ -62,7 +67,12 @@ check("compliant call returns a receipt id", Boolean(parsed?.receiptId), parsed?
 const bad = await runBridge({
   policyHash: "0xtest",
   decision: true,
-  usedForbiddenData: true,
+  candidateMetrics: {
+    idCommitment: "0xdeadbeef",
+    skillsScore: 0,
+    experienceYears: 3,
+    usedForbiddenData: true,
+  },
 });
 console.log("\nviolation ->", bad.err || "(no stderr)");
 check("violation exits non-zero", bad.code !== 0, `exit ${bad.code}`);
@@ -80,6 +90,12 @@ const junk = await new Promise((resolve) => {
   child.stdin.end();
 });
 check("malformed input fails closed", junk.code !== 0 && junk.out === "", `exit ${junk.code}`);
+
+// A payload missing the witness must be refused, not proven with empty metrics.
+const noMetrics = await runBridge({ policyHash: "0xtest", decision: true });
+check("missing candidateMetrics is refused",
+      noMetrics.code !== 0 && noMetrics.err.includes("candidateMetrics"),
+      noMetrics.err || `exit ${noMetrics.code}`);
 
 console.log("\n" + "=".repeat(66));
 if (failures.length) {

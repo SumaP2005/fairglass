@@ -7,7 +7,16 @@
  *
  * INTERFACE (locked with Donalsien, do not change without telling him):
  *
- *   stdin   {"policyHash":"0x...","decision":true,"usedForbiddenData":false}
+ *   stdin   {
+ *     "policyHash": "0x...",           32-byte hex
+ *     "decision": true,
+ *     "candidateMetrics": {            mirrors the contract witness exactly
+ *       "idCommitment": "0x...",       32-byte hex, salted, not reversible
+ *       "skillsScore": 3,
+ *       "experienceYears": 3,
+ *       "usedForbiddenData": false
+ *     }
+ *   }
  *   stdout  {"verified":true,"receiptId":"0x...","txHash":"0x..."}
  *
  *   On a policy violation: exit code 1, reason on stderr, nothing on stdout.
@@ -48,7 +57,14 @@ function fail(reason) {
   process.exit(1);
 }
 
-async function submitDecision({ policyHash, decision, usedForbiddenData }) {
+function hexToBytes(hex) {
+  const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
+  return Uint8Array.from(clean.match(/.{2}/g).map((b) => parseInt(b, 16)));
+}
+
+async function submitDecision({ policyHash, decision, candidateMetrics }) {
+  const metrics = candidateMetrics || {};
+  const usedForbiddenData = metrics.usedForbiddenData === true;
   // The contract's bias gate is `assert(metrics.usedForbiddenData == false)`.
   // We check it here too so a violating call never even reaches the chain,
   // and so the stub behaves exactly like the real contract will.
@@ -59,11 +75,18 @@ async function submitDecision({ policyHash, decision, usedForbiddenData }) {
   if (BRIDGE_IS_STUB) {
     // TODO(Lastos): replace this block with the real flow.
     //   1. connect to the proof server at PROOF_SERVER_URL (above)
-    //   2. build the witnesses the circuit expects:
-    //        getInitialPolicyHash()  -> policyHash passed in above
-    //        getCandidateMetrics()   -> {idCommitment, skillsScore,
-    //                                    experienceYears, usedForbiddenData}
-    //        getCurrentTimestamp()   -> Date.now() / 1000
+    //   2. build the witnesses. Everything is already here, and the types
+    //      come from the generated contract/index.d.ts:
+    //        getInitialPolicyHash() -> hexToBytes(policyHash)        Uint8Array
+    //        getCandidateMetrics()  -> {
+    //              idCommitment:      hexToBytes(metrics.idCommitment),
+    //              skillsScore:       BigInt(metrics.skillsScore),
+    //              experienceYears:   BigInt(metrics.experienceYears),
+    //              usedForbiddenData: metrics.usedForbiddenData
+    //            }
+    //        getCurrentTimestamp()  -> BigInt(Math.floor(Date.now() / 1000))
+    //      Note the bigints. The circuit takes Uint<32>, and the runtime
+    //      rejects plain JS numbers there.
     //   3. call submitDecision(decision) on the deployed contract
     //   4. return the real receipt id and tx hash below
     // Keep the return shape identical or the Python side breaks.
@@ -83,6 +106,7 @@ async function submitDecision({ policyHash, decision, usedForbiddenData }) {
   try {
     const input = await readStdin();
     if (!input.policyHash) fail("bridge: missing policyHash on stdin");
+    if (!input.candidateMetrics) fail("bridge: missing candidateMetrics on stdin");
     const result = await submitDecision(input);
     process.stdout.write(JSON.stringify(result));
   } catch (err) {

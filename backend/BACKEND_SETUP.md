@@ -72,11 +72,36 @@ Both modes enforce the same rule: a biased decision must not verify.
 | POST | `/screen?model=fair` or `?model=biased` | Run the full pipeline, return decisions + receipt |
 | GET | `/policy` | The locked policy and its hash |
 | GET | `/candidates` | Candidate pool, allowed attributes only |
+| POST | `/verify-commitment` | Open a receipt's `idCommitment` and prove which candidate it refers to |
 | GET | `/health` | Liveness check: proof mode, proof server address, and whether it is reachable |
 
 The `/screen` body is optional. Send `{"required_skills": ["java", "aws"]}` to
 screen for a different role. Skills and experience are allowed attributes, so
 changing the role cannot make a decision unfair and the proof still verifies.
+
+### Privacy model, worth understanding before changing anything
+
+`idCommitment` is the key the contract writes into its public `receipts`
+ledger. It is `SHA256(domain || nonce || candidateId)` with **32 fresh random
+bytes of nonce per receipt**. Two consequences:
+
+- **Hiding.** An observer with only the commitment learns nothing. They cannot
+  brute force `c1`..`c10` because they would also have to guess 256 bits of
+  nonce. Two screenings of the same candidate produce unrelated commitments, so
+  the ledger cannot be mined for how often someone was screened.
+- **Binding.** SHA256 collision resistance means whoever committed cannot later
+  claim it referred to a different candidate.
+
+The nonce is the **opening**. It is returned to the caller as
+`commitmentNonce`, is never written on chain, and is never sent to the proof
+server. Whoever holds it can prove what a receipt refers to via
+`/verify-commitment`; whoever does not, cannot. Do not log it, do not persist
+it, do not put it in the disclosure block. There is a test asserting it never
+appears in the on-chain block.
+
+Every `/screen` response also carries a `disclosure` object stating exactly
+what goes public and what stays on the machine. That is the "show proof not
+data" claim made checkable rather than asserted.
 
 ### /screen response shape (agreed with Eman, do not break)
 

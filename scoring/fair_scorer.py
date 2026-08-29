@@ -10,21 +10,34 @@ MIN_EXPERIENCE_YEARS = 1
 
 def score_candidate(candidate, required_skills):
     """Return True (shortlist) or False (reject) using only allowed attributes."""
+    return score_candidate_detailed(candidate, required_skills)[0]
+
+
+def score_candidate_detailed(candidate, required_skills):
+    """Return (decision, skill_match, experience).
+
+    The contract's getCandidateMetrics witness needs skillsScore and
+    experienceYears as numbers, not just the yes/no, so the scorer has to
+    hand back what it counted rather than throwing it away.
+    """
     skills = set(candidate.get("skills", []))
     experience = candidate.get("experience_years", 0)
 
     skill_match = len(skills & set(required_skills))
-    return skill_match >= MIN_SKILL_MATCH and experience >= MIN_EXPERIENCE_YEARS
+    decision = skill_match >= MIN_SKILL_MATCH and experience >= MIN_EXPERIENCE_YEARS
+    return decision, skill_match, experience
 
 
 def score_candidates(candidates, required_skills=None):
     required_skills = required_skills or ["python", "react", "sql"]
     results = []
     for c in candidates:
-        decision = score_candidate(c, required_skills)
+        decision, skill_match, experience = score_candidate_detailed(c, required_skills)
         results.append({
             "id": c["id"],
             "decision": "shortlist" if decision else "reject",
+            "skills_score": skill_match,
+            "experience_years": experience,
         })
     return results
 

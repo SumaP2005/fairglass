@@ -93,6 +93,73 @@ plan, so trust this table over the doc where they differ.
 
 All seed data in `data/` must be synthetic. No real names, no real resumes.
 
+## Privacy design: what the ledger actually stores
+
+The claim is "show proof, not data". Here is what backs it.
+
+### The ledger key is a commitment, not an identifier
+
+Every fairness receipt is stored on chain under an `idCommitment`:
+
+```
+idCommitment = SHA256( domain || nonce || candidateId )
+```
+
+where `nonce` is **32 fresh random bytes generated per receipt**. That nonce is
+what turns a lookup key into a commitment, and it buys two properties:
+
+**Hiding.** Someone reading the ledger sees a 32-byte value and learns nothing
+from it. They cannot brute force it even knowing the ids look like `c1`..`c10`,
+because they would also have to guess 256 bits of nonce. And because the nonce
+is fresh each time, two screenings of the same candidate produce completely
+unrelated commitments. The chain cannot be mined for "how many times was this
+person screened and rejected", which a fixed key would have leaked.
+
+**Binding.** SHA256 collision resistance means whoever created the commitment
+cannot later claim it referred to a different candidate.
+
+The nonce is the **opening**. It is returned to the employer who ran the
+screening, is never written on chain, and is never sent to the proof server.
+Holding it lets you prove which candidate a receipt refers to. Not holding it
+means you cannot, and the binding property means the holder cannot lie about it
+either.
+
+You can check both properties yourself, see below.
+
+### What crosses which boundary
+
+| Data | Where it goes |
+|---|---|
+| policy hash, decision, timestamp, id commitment | public ledger |
+| skills score, experience years, forbidden-data flag | witness only, consumed by the proof server on the local machine |
+| candidate name, age, gender | never read by the fair scorer, never sent anywhere |
+| commitment nonce | returned to the employer, never transmitted onward |
+
+The proof server runs locally by design. Witness data never leaves the machine
+even when the chain is public. Every `/screen` response carries a `disclosure`
+object stating this per request, and the test suite asserts that no forbidden
+field and no nonce ever appears in the on-chain block.
+
+### Check it yourself
+
+With the backend and frontend running, open:
+
+```
+http://localhost:8080/privacy.html
+```
+
+Run a screening twice and compare the commitments: same candidate, unrelated
+values, which is hiding. Then try to open the commitment as the real candidate
+(it opens) and as any other (it refuses), which is binding.
+
+### Honest limits
+
+The scoring model is a deterministic Python function, not a trained ML model.
+The commitment is a hash commitment, which is computationally hiding and
+binding under SHA256; it is not a Pedersen commitment and offers no
+homomorphic properties, which this design does not need. Seed data is fully
+synthetic.
+
 ## AI tool disclosure
 
 Per MLH rules, the team discloses use of AI coding assistants (including

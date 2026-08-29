@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FairGlass Privacy Inspector</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+
+    .pane { border-radius: 6px; padding: 1rem; }
+    .pane h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+    .pane.public { background: #fdecea; border: 1px solid #e6b0aa; }
+    .pane.private { background: #e8f5e9; border: 1px solid #a5d6a7; }
+    .pane .sub { font-size: 0.75rem; opacity: 0.75; margin-bottom: 0.75rem; }
+
+    .kv { font-family: monospace; font-size: 0.78rem; word-break: break-all; margin: 0.4rem 0; }
+    .kv b { display: block; font-family: system-ui, sans-serif; font-size: 0.72rem;
+            text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+
+    .hidden-list { margin: 0.4rem 0 0; padding-left: 1.1rem; font-size: 0.82rem; }
+    .hidden-list li { margin: 0.2rem 0; }
+
+    .verdict { font-weight: bold; padding: 0.5rem 0.75rem; border-radius: 6px;
+               display: inline-block; margin-top: 0.75rem; }
+    .verdict.match { background: #e8f5e9; color: var(--green); }
+    .verdict.nomatch { background: #fdecea; color: var(--red); }
+
+    .runs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+    @media (max-width: 720px) { .runs { grid-template-columns: 1fr; } }
+    .run { background: var(--light); padding: 0.6rem; border-radius: 6px;
+           font-family: monospace; font-size: 0.72rem; word-break: break-all; }
+    .run b { display: block; font-family: system-ui, sans-serif; font-size: 0.72rem;
+             margin-bottom: 0.3rem; opacity: 0.7; }
+
+    .muted { font-size: 0.85rem; opacity: 0.8; }
+    select { padding: 0.45rem; border-radius: 6px; border: 1px solid #bbb; margin-right: 0.5rem; }
+    .step { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase;
+            opacity: 0.6; margin-bottom: 0.25rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FairGlass Privacy Inspector</h1>
+    <p>Show proof, not data. This page lets you check that claim rather than take it on trust.</p>
+  </header>
+
+  <main>
+    <section>
+      <div class="step">Step 1</div>
+      <h2>Run a screening</h2>
+      <p class="muted">
+        Screens the candidate pool under the fairness policy and produces one
+        receipt. Nothing below is filled in until you press this.
+      </p>
+      <label class="muted" for="prove-target">Prove candidate:</label>
+      <select id="prove-target"><option value="">first shortlisted</option></select>
+      <button id="run">Run screening</button>
+      <span id="run-status" class="muted"></span>
+    </section>
+
+    <section>
+      <div class="step">Step 2</div>
+      <h2>What is public, what is not</h2>
+      <p class="muted">
+        Left is everything a stranger reading the public ledger can see. Right
+        is what stayed on this machine. Both come straight from the backend's
+        disclosure report, not from anything typed into this page.
+      </p>
+      <div class="split">
+        <div class="pane public">
+          <h3>Anyone on the internet sees this</h3>
+          <div class="sub">Written into the contract's receipts ledger</div>
+          <div id="public-side"><span class="muted">Run a screening first.</span></div>
+        </div>
+        <div class="pane private">
+          <h3>Never leaves this machine</h3>
+          <div class="sub">Witness data and secrets, consumed locally</div>
+          <div id="private-side"><span class="muted">Run a screening first.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="step">Step 3</div>
+      <h2>Hiding: the same candidate looks different every time</h2>
+      <p class="muted">
+        The ledger key is a commitment, not an ID. Press run again and compare.
+        Same candidate, same policy, completely unrelated commitments, so nobody
+        can link two receipts or count how often a person was screened.
+      </p>
+      <div class="runs">
+        <div class="run"><b>Previous run</b><span id="prev-commit">nothing yet</span></div>
+        <div class="run"><b>Latest run</b><span id="curr-commit">nothing yet</span></div>
+      </div>
+      <div id="hiding-verdict"></div>
+    </section>
+
+    <section>
+      <div class="step">Step 4</div>
+      <h2>Binding: only the nonce holder can open it, and cannot lie</h2>
+      <p class="muted">
+        The nonce is the opening. Pick the real candidate and the commitment
+        opens. Pick any other and it refuses, because the commitment binds to
+        exactly one candidate.
+      </p>
+      <select id="candidate"></select>
+      <button id="verify">Try to open the commitment</button>
+      <div id="verify-verdict"></div>
+    </section>
+  </main>
+
+  <script src="privacy.js"></script>
+</body>
+</html>

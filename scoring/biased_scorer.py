@@ -23,5 +23,9 @@ def score_candidates(candidates):
             "id": c["id"],
             "decision": "shortlist" if decision else "reject",
             "used_forbidden_attribute": "age",
+            # Zero because this scorer never looked at skills. Reported
+            # honestly rather than faked, so the witness reflects reality.
+            "skills_score": 0,
+            "experience_years": c.get("experience_years", 0),
         })
     return results
