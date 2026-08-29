@@ -1,0 +1,20 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield outline: represents protection / policy enforcement -->
+  <path
+    d="M32 4 L54 12 V30 C54 45 44 55 32 60 C20 55 10 45 10 30 V12 Z"
+    fill="#1f3864"
+  />
+  <path
+    d="M32 8 L50 15 V30 C50 42.5 41.5 51 32 55.5 C22.5 51 14 42.5 14 30 V15 Z"
+    fill="#dce6f1"
+  />
+  <!-- Checkmark: represents a verified / fair decision -->
+  <path
+    d="M22 32 L29 39 L43 23"
+    stroke="#2e7d32"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>

@@ -4,27 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FairGlass Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>FairGlass</h1>
     <p>Proof-of-Fair AI Hiring: policy, screening, and receipts</p>
+    <div id="status-bar">
+      <span id="status-backend" class="status-pill status-unknown">Backend: checking…</span>
+      <span id="status-proof" class="status-pill status-unknown">Proof server: checking…</span>
+    </div>
   </header>
 
   <main>
     <section id="policy-panel">
       <h2>Fairness Policy</h2>
-      <ul>
-        <li>Allowed: skills, experience</li>
-        <li>Forbidden: name, age, gender</li>
+      <ul id="policy-list">
+        <li>Loading policy…</li>
       </ul>
+      <p id="policy-hash" class="hint"></p>
     </section>
 
     <section id="screening-panel">
       <h2>Screening</h2>
-      <button id="run-fair">Run Fair Model</button>
-      <button id="run-biased">Run Biased Model</button>
+
+      <label for="required-skills">Required skills (comma-separated)</label>
+      <input
+        type="text"
+        id="required-skills"
+        placeholder="python, react, sql"
+      />
+
+      <div class="button-row">
+        <button id="run-fair">Run Fair Model</button>
+        <button id="run-biased">Run Biased Model</button>
+      </div>
       <div id="results"></div>
     </section>
 
