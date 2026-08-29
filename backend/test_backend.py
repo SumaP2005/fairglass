@@ -88,6 +88,28 @@ check("fair witness is not flagged", w["usedForbiddenData"] is False)
 wb = _app.witness_payload(biased["decisions"])
 check("biased witness is flagged", wb["usedForbiddenData"] is True)
 
+# --- Single-skill roles must still be screenable --------------------------
+# Regression: the skill threshold was a fixed 2, so asking for one skill made
+# every candidate unreachable and the fair model rejected all ten.
+one_skill = client.post("/screen?model=fair", json={"required_skills": ["sql"]}).get_json()
+shortlisted = [d["id"] for d in one_skill["decisions"] if d["decision"] == "shortlist"]
+print()
+print(f"single-skill role 'sql' shortlists: {shortlisted}")
+check("a one-skill role does not reject everyone", len(shortlisted) > 0,
+      f"{len(shortlisted)}/10 shortlisted")
+check("a one-skill role still rejects the unqualified",
+      len(shortlisted) < len(one_skill["decisions"]))
+
+two_skill = client.post("/screen?model=fair",
+                        json={"required_skills": ["python", "sql"]}).get_json()
+check("a two-skill role still screens",
+      any(d["decision"] == "shortlist" for d in two_skill["decisions"]))
+
+# An empty list must fall back to the default role, not wave everyone through.
+empty = client.post("/screen?model=fair", json={"required_skills": []}).get_json()
+check("empty required_skills falls back to the default role",
+      empty["requiredSkills"] == ["python", "react", "sql"], str(empty["requiredSkills"]))
+
 # --- Which candidate gets proven is selectable, not fixed -----------------
 for target in ("c4", "c8"):
     picked = client.post("/screen?model=fair", json={"candidate_id": target}).get_json()

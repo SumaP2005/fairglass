@@ -8,6 +8,17 @@ MIN_SKILL_MATCH = 2
 MIN_EXPERIENCE_YEARS = 1
 
 
+def required_matches(required_skills):
+    """How many skills a candidate must match to clear the bar.
+
+    Capped at the number of skills actually asked for. Screening for a single
+    skill used to demand two matches, which no candidate could ever reach, so
+    the fair model rejected everyone while the biased model kept shortlisting.
+    Anyone typing one skill into the dashboard saw a broken demo.
+    """
+    return min(MIN_SKILL_MATCH, len(required_skills)) if required_skills else 0
+
+
 def score_candidate(candidate, required_skills):
     """Return True (shortlist) or False (reject) using only allowed attributes."""
     return score_candidate_detailed(candidate, required_skills)[0]
@@ -24,7 +35,8 @@ def score_candidate_detailed(candidate, required_skills):
     experience = candidate.get("experience_years", 0)
 
     skill_match = len(skills & set(required_skills))
-    decision = skill_match >= MIN_SKILL_MATCH and experience >= MIN_EXPERIENCE_YEARS
+    threshold = required_matches(required_skills)
+    decision = skill_match >= threshold and experience >= MIN_EXPERIENCE_YEARS
     return decision, skill_match, experience
 
 
