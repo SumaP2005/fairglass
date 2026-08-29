@@ -1,6 +1,6 @@
 """
 Fair scorer. Decides based ONLY on allowed attributes: skills, experience.
-Owner: sumap
+Owner: Donalsien (KADHACK). Taken over from sumap, agreed in the team channel.
 """
 
 ALLOWED_ATTRIBUTES = {"skills", "experience_years"}
@@ -30,6 +30,7 @@ def score_candidates(candidates, required_skills=None):
 
 
 if __name__ == "__main__":
-    # quick manual test. TODO(sumap): point this at data/candidates.json
+    # quick manual test against a single row; the real check lives in
+    # backend/test_backend.py, which runs both scorers over data/candidates.json
     sample = [{"id": "c1", "skills": ["python", "react"], "experience_years": 2}]
     print(score_candidates(sample))

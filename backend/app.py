@@ -47,6 +47,10 @@ POLICY_HASH = "0x" + hashlib.sha256(
 ).hexdigest()
 
 MOCK_PROOF = os.environ.get("MOCK_PROOF", "1") == "1"
+
+# The role being hired for. Not part of the fairness policy: these are all
+# allowed attributes, so changing them cannot make a decision unfair.
+DEFAULT_REQUIRED_SKILLS = ["python", "react", "sql"]
 BIAS_REASON = "BIAS DETECTED: Forbidden attributes (name, age, gender) were used"
 
 
@@ -55,10 +59,11 @@ def load_candidates():
         return json.load(f)
 
 
-def run_scorer(model, candidates):
+def run_scorer(model, candidates, required_skills):
     if model == "biased":
+        # The biased scorer ignores skills entirely, which is the point.
         return biased_scorer.score_candidates(candidates)
-    return fair_scorer.score_candidates(candidates)
+    return fair_scorer.score_candidates(candidates, required_skills)
 
 
 def used_forbidden_data(decisions):
@@ -151,11 +156,23 @@ def screen():
     if model not in ("fair", "biased"):
         return jsonify({"error": "model must be 'fair' or 'biased'"}), 400
 
+    body = request.get_json(silent=True) or {}
+    required_skills = body.get("required_skills") or DEFAULT_REQUIRED_SKILLS
+    if not isinstance(required_skills, list) or not all(
+        isinstance(s, str) for s in required_skills
+    ):
+        return jsonify({"error": "required_skills must be a list of strings"}), 400
+
     candidates = load_candidates()
-    decisions = run_scorer(model, candidates)
+    decisions = run_scorer(model, candidates, required_skills)
     receipt = mock_proof(model, decisions) if MOCK_PROOF else real_proof(model, decisions)
 
-    return jsonify({"model": model, "decisions": decisions, "receipt": receipt})
+    return jsonify({
+        "model": model,
+        "requiredSkills": required_skills,
+        "decisions": decisions,
+        "receipt": receipt,
+    })
 
 
 @app.route("/policy", methods=["GET"])

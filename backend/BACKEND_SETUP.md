@@ -59,6 +59,10 @@ Both modes enforce the same rule: a biased decision must not verify.
 | GET | `/candidates` | Candidate pool, allowed attributes only |
 | GET | `/health` | Liveness check, shows active proof mode |
 
+The `/screen` body is optional. Send `{"required_skills": ["java", "aws"]}` to
+screen for a different role. Skills and experience are allowed attributes, so
+changing the role cannot make a decision unfair and the proof still verifies.
+
 ### /screen response shape (agreed with Eman, do not break)
 
 ```json

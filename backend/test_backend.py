@@ -57,6 +57,20 @@ check("c4 shortlisted by fair but rejected by biased",
 check("c5 rejected by fair but shortlisted by biased",
       fair_by_id["c5"] == "reject" and biased_by_id["c5"] == "shortlist")
 
+# --- Role is configurable: same policy, different job ---------------------
+java_role = client.post("/screen?model=fair",
+                        json={"required_skills": ["java", "spring boot", "aws"]}).get_json()
+java_by_id = {d["id"]: d["decision"] for d in java_role["decisions"]}
+print()
+print(f"Java role -> c6 (java/spring/aws, 12 yrs): {java_by_id['c6']}"
+      f"  |  c1 (python/react/sql): {java_by_id['c1']}")
+check("custom role is echoed back", java_role["requiredSkills"] == ["java", "spring boot", "aws"])
+check("java role shortlists c6", java_by_id["c6"] == "shortlist")
+check("java role rejects c1", java_by_id["c1"] == "reject")
+check("changing the role still verifies", java_role["receipt"]["verified"] is True)
+check("bad required_skills returns 400",
+      client.post("/screen?model=fair", json={"required_skills": "python"}).status_code == 400)
+
 # --- The API must not leak forbidden attributes ---------------------------
 first = client.get("/candidates").get_json()[0]
 print(f"\n/candidates first row: {json.dumps(first)}")

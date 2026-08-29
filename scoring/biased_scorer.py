@@ -1,7 +1,7 @@
 """
 Biased scorer. INTENTIONALLY uses a forbidden attribute (age) so the
 Compact contract has something real to reject on-chain during the demo.
-Owner: sumap
+Owner: Donalsien (KADHACK). Taken over from sumap, agreed in the team channel.
 
 This file must never be the "fair" path. It exists only to prove the
 contract enforces the policy.

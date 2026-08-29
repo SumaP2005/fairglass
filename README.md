@@ -15,7 +15,7 @@ decision followed an agreed fairness policy, without exposing any candidate data
 fairglass/
 ├── frontend/     # Plain HTML/CSS/JS dashboard + receipt page    (Eman, sumap)
 ├── backend/      # Flask service: runs scorer, calls proof bridge (Donalsien)
-├── scoring/      # Fair scorer + biased scorer, Python            (sumap)
+├── scoring/      # Fair scorer + biased scorer, Python        (Donalsien)
 ├── contract/     # Compact policy contract (Midnight starter kit) (Lastos)
 ├── data/         # Seeded fake candidate data (JSON)              (Yashasvi, sumap)
 └── docs/         # README assets, architecture diagram, demo script (Yashasvi)
@@ -74,15 +74,16 @@ To check the backend on its own, run `python test_backend.py` from `backend/`.
 
 ## Team roles
 
-See `docs/team-plan.md` (or the shared team work plan doc) for the full task
-breakdown, critical path, and 48-hour timeline.
+See the shared team work plan doc for the full task breakdown, critical path
+and 48-hour timeline. Ownership below is the current state, not the original
+plan, so trust this table over the doc where they differ.
 
 | Person | Role | Folder |
 |---|---|---|
 | Eman | Tech Lead + Frontend | `frontend/` |
 | Lastos | Compact Engineer | `contract/` |
-| Donalsien (KADHACK) | Integrator / Backend | `backend/` |
-| sumap | AI & Data | `scoring/`, `data/` |
+| Donalsien (KADHACK) | Integrator / Backend | `backend/`, `scoring/`, `contract/bridge/` |
+| sumap | Frontend + Data | `frontend/`, `data/` |
 | Yashasvi | Docs, Video, Submission | `docs/` |
 
 ## Policy (locked Friday night)

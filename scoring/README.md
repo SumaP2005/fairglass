@@ -1,6 +1,6 @@
 # Scoring engine (simulated AI model)
 
-Owner: sumap
+Owner: Donalsien (KADHACK). Taken over from sumap, agreed in the team channel.
 
 - `fair_scorer.py` decides using only allowed attributes: skills and experience.
 - `biased_scorer.py` intentionally uses a forbidden attribute, age. It exists only
