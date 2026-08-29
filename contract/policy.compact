@@ -1,4 +1,4 @@
-// FairGlass fairness-policy contract — SKELETON
+// FairGlass fairness-policy contract (skeleton)
 // Owner: Lastos
 // Fill in using the official Midnight starter-kit template as a base.
 
@@ -21,7 +21,7 @@ struct CandidateMetrics {
     usedForbiddenData: Boolean   // Forbidden flag (name, age, gender)
 }
 
-// 2. The receipt event structure (policy hash, decision, timestamp — no personal data)
+// 2. The receipt event structure: policy hash, decision, timestamp, no personal data
 struct FairnessReceipt {
     policyHash: Bytes<32>,
     decision: Boolean,

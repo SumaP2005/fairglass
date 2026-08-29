@@ -1,9 +1,9 @@
 """
-Biased scorer — INTENTIONALLY uses a forbidden attribute (age) so the
+Biased scorer. INTENTIONALLY uses a forbidden attribute (age) so the
 Compact contract has something real to reject on-chain during the demo.
 Owner: sumap
 
-This file must never be the "fair" path — it exists only to prove the
+This file must never be the "fair" path. It exists only to prove the
 contract enforces the policy.
 """
 

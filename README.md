@@ -33,11 +33,44 @@ cd backend && python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cd ..
 
-# 3. Frontend: no build step, just open frontend/index.html
-#    (or run: python3 -m http.server 8080 --directory frontend)
+# 3. Frontend: no build step, but it MUST be served over HTTP (see note below)
+python3 -m http.server 8080 --directory frontend
 
 # 4. Contract: follow the Midnight starter-kit instructions in contract/README.md
 ```
+
+> **Do not open `frontend/index.html` directly from the file system.** A page
+> loaded over `file://` has a `null` origin, and the browser will block every
+> request it makes to the backend. The screen will show a CORS error that looks
+> like the backend is down when it is actually fine. Always serve the frontend
+> with the command above and browse to `http://localhost:8080`.
+
+## Running the demo
+
+Two terminals:
+
+```bash
+# Terminal 1: the backend (from backend/, venv active)
+python app.py                 # serves http://localhost:5000
+
+# Terminal 2: the frontend (from the repo root)
+python3 -m http.server 8080 --directory frontend
+```
+
+Open `http://localhost:8080`, then:
+
+- **Run Fair Model** scores candidates using only skills and experience. The
+  policy holds, so the contract issues a fairness receipt.
+- **Run Biased Model** scores using age, which the policy forbids. The proof
+  fails the contract's bias gate and no receipt is issued.
+
+Watch candidates `c4` and `c5` across the two runs. `c4` is 51 and well
+qualified; the fair model shortlists them and the biased model drops them.
+`c5` is 23 and underqualified; the fair model drops them and the biased model
+shortlists them. Nothing but age changed the outcome, and that is exactly what
+the contract refuses to certify.
+
+To check the backend on its own, run `python test_backend.py` from `backend/`.
 
 ## Team roles
 

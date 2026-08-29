@@ -1,5 +1,5 @@
 """
-Fair scorer — decides based ONLY on allowed attributes: skills, experience.
+Fair scorer. Decides based ONLY on allowed attributes: skills, experience.
 Owner: sumap
 """
 
@@ -30,6 +30,6 @@ def score_candidates(candidates, required_skills=None):
 
 
 if __name__ == "__main__":
-    # quick manual test — TODO(sumap): point this at data/candidates.json
+    # quick manual test. TODO(sumap): point this at data/candidates.json
     sample = [{"id": "c1", "skills": ["python", "react"], "experience_years": 2}]
     print(score_candidates(sample))

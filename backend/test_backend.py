@@ -1,0 +1,83 @@
+"""
+Smoke test for the FairGlass backend. No server needed, no extra packages.
+
+Run it from the backend/ folder:
+    Windows:      venv\\Scripts\\python test_backend.py
+    Linux / Mac:  python test_backend.py
+
+Every check prints PASS or FAIL and the script exits non-zero if anything failed,
+so it also works as a pre-push check.
+"""
+
+import json
+
+from app import app, POLICY_HASH
+
+failures = []
+
+
+def check(label, condition, detail=""):
+    status = "PASS" if condition else "FAIL"
+    print(f"[{status}] {label}" + (f"  ->  {detail}" if detail else ""))
+    if not condition:
+        failures.append(label)
+
+
+client = app.test_client()
+
+print("=" * 70)
+print("FairGlass backend smoke test")
+print("=" * 70)
+print(f"\nPolicy hash: {POLICY_HASH}\n")
+
+# --- Fair model: must produce a verified receipt --------------------------
+fair = client.post("/screen?model=fair").get_json()
+receipt = fair["receipt"]
+print("Fair receipt:", json.dumps(receipt, indent=2))
+check("fair model verifies", receipt["verified"] is True)
+check("fair receipt has an id", "receiptId" in receipt, receipt.get("receiptId", "missing"))
+check("fair decisions carry no forbidden tag",
+      all("used_forbidden_attribute" not in d for d in fair["decisions"]))
+
+# --- Biased model: must be rejected, no receipt issued --------------------
+biased = client.post("/screen?model=biased").get_json()
+receipt = biased["receipt"]
+print("\nBiased receipt:", json.dumps(receipt, indent=2))
+check("biased model is rejected", receipt["verified"] is False)
+check("rejection carries a reason", "reason" in receipt, receipt.get("reason", "missing"))
+check("no receipt issued on rejection", "receiptId" not in receipt)
+
+# --- The demo moment: same candidate, opposite outcomes -------------------
+fair_by_id = {d["id"]: d["decision"] for d in fair["decisions"]}
+biased_by_id = {d["id"]: d["decision"] for d in biased["decisions"]}
+print(f"\nc4 (age 51, qualified):   fair={fair_by_id['c4']}  biased={biased_by_id['c4']}")
+print(f"c5 (age 23, unqualified): fair={fair_by_id['c5']}  biased={biased_by_id['c5']}")
+check("c4 shortlisted by fair but rejected by biased",
+      fair_by_id["c4"] == "shortlist" and biased_by_id["c4"] == "reject")
+check("c5 rejected by fair but shortlisted by biased",
+      fair_by_id["c5"] == "reject" and biased_by_id["c5"] == "shortlist")
+
+# --- The API must not leak forbidden attributes ---------------------------
+first = client.get("/candidates").get_json()[0]
+print(f"\n/candidates first row: {json.dumps(first)}")
+leaked = [f for f in ("name", "age", "gender") if f in first]
+check("/candidates hides forbidden attributes", not leaked, f"leaked: {leaked}" if leaked else "")
+
+# --- Housekeeping ---------------------------------------------------------
+check("policy hash is stable across calls",
+      client.get("/policy").get_json()["policyHash"] == POLICY_HASH)
+check("bad model name returns 400", client.post("/screen?model=nonsense").status_code == 400)
+check("health endpoint reports mode",
+      client.get("/health").get_json()["proofMode"] in ("mock", "real"))
+
+# --- CORS: the frontend runs on a different port than this service --------
+cors = client.post("/screen?model=fair", headers={"Origin": "http://localhost:8080"})
+check("CORS allows the frontend origin",
+      cors.headers.get("Access-Control-Allow-Origin") == "http://localhost:8080",
+      cors.headers.get("Access-Control-Allow-Origin", "no header"))
+
+print("\n" + "=" * 70)
+if failures:
+    print(f"{len(failures)} FAILED: " + ", ".join(failures))
+    raise SystemExit(1)
+print("All checks passed.")
