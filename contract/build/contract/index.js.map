@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../",
+  "sources": ["policy.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAuCA;;;;;;;;;;;;;;;;;;;MAKA,AAAA,cAeC;;;;;cAf6B,UAAiB;;;;;;;;;;;;;;;;;;yCAAjB,UAAiB;;;;;;;;;gDAAjB,UAAiB;;;OAe9C;;;;GAlBA;EAFD;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;IARA;;;;;;;;;yEAA0C;IAC1C;;;;;;;;;;yEAAwD;UAQpD,KAAgB;IAAhB;;;;;;;2HAAA,KAAgB;;yEAAA;;;;;;;GACnB;EAND,AAAA,uBAA0C;;0DAA1C,oBAA0C;;;;;;;;;;;;;;GAAA;EAC1C,AAAA,sBAAgD;;0DAAhD,mBAAgD;;;;;;;;;;;;;;GAAA;EAChD,AAAA,sBAAwC;;0DAAxC,mBAAwC;;;;;;;;;;;;;;GAAA;EAOxC,AAAA,iBAeC,4BAf6B,UAAiB;UACrC,SAA+B;4BAG9B,SAAO;;UAGR,SAIL;kDAHe;;;;;;;;;;;uHAAgB;kCAClB,UAAQ;;;UAKtB,KAAQ,GAAiB,SAAO;IAAhC;;;;;;;;;;2HAAA,KAAQ;;;2HAAiD,SAAO;;;wEAAxD;;GACX;;;;;;;;;;;;;;;;IA5BD;qCAAA;;;;;;;;;;;0GAA0C;KAAA;IAC1C;;;;;uCAAA;;;;;;;;;;;;;;;;4GAAwD;;;;;;uCAAxD;;;;;;;;;;;;4GAAwD;;;;;;;;;;;;;;uCAAxD;;;;;;;;;;;;;;;4GAAwD;;;;;;;;;;;;;;uCAAxD;;;;;;;;;;;;;;;;;4GAAwD;;;;;;;;;KAAA;;;;;;;;;;;;;;"
+}
