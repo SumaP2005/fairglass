@@ -21,7 +21,8 @@ fairglass/
 └── docs/         # README assets, architecture diagram, demo script (Yashasvi)
 ```
 
-## Setup (run once per laptop, Friday night)
+## Setup 
+*Run once per laptop, Friday night*
 
 ```bash
 # 1. Clone
@@ -64,11 +65,13 @@ Open `http://localhost:8080`, then:
 - **Run Biased Model** scores using age, which the policy forbids. The proof
   fails the contract's bias gate and no receipt is issued.
 
-Watch candidates `c4` and `c5` across the two runs. `c4` is 51 and well
-qualified; the fair model shortlists them and the biased model drops them.
-`c5` is 23 and underqualified; the fair model drops them and the biased model
-shortlists them. Nothing but age changed the outcome, and that is exactly what
-the contract refuses to certify.
+Watch candidates `c4` and `c5` across the two runs. `c4` is 51 years old and well
+qualified; the fair model shortlists them while the biased model rejects them purely because of age.
+`c5` is 23 and underqualified; the fair model drops them while the biased model
+shortlists them. 
+The policy is the same in both runs; only the use of age changes the outcome, which is exactly what the contract refuses to certify.
+
+A rejected candidate can still produce a valid fairness receipt. The proof verifies that the hiring policy was followed, not that the candidate was hired.
 
 To check the backend on its own, run `python test_backend.py` from `backend/`.
 
@@ -90,18 +93,17 @@ plan, so trust this table over the doc where they differ.
 
 - **Allowed attributes:** skills, years of experience
 - **Forbidden attributes:** name, age, gender
-
-All seed data in `data/` must be synthetic. No real names, no real resumes.
+- **Data requirement:** All seed data in `data/` must be synthetic. No real names, no real resumes.
 
 ## Running the demo for judges
 
-`docs/DEMO_RUNBOOK.md` has the pre-flight checks, the click order, what each
+[DEMO_RUNBOOK.md](docs/DEMO_RUNBOOK.md) has the pre-flight checks, the click order, what each
 screen proves, what to do if something breaks mid-run, and the answers to the
 questions judges are most likely to ask.
 
 ## Privacy design: what the ledger actually stores
 
-The claim is "show proof, not data". Here is what backs it.
+The principle is simple: **show proof, not data.** Here is how the privacy design supports it.
 
 ### The ledger key is a commitment, not an identifier
 
