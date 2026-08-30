@@ -3,49 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
   <title>FairGlass Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+
   <header>
-    <h1>FairGlass</h1>
-    <p>Proof-of-Fair AI Hiring: policy, screening, and receipts</p>
-    <div id="status-bar">
-      <span id="status-backend" class="status-pill status-unknown">Backend: checking…</span>
-      <span id="status-proof" class="status-pill status-unknown">Proof server: checking…</span>
+    <div class="header-inner">
+      <div class="branding">
+        <h1>FairGlass</h1>
+        <p>Proof-of-fair AI hiring: policy, screening, and receipts</p>
+        <a href="privacy.html" class="privacy-link">What data stays local? →</a>
+      </div>
+      <div id="status-bar">
+        <span id="status-backend" class="status-pill">Backend: checking…</span>
+        <span id="status-proof" class="status-pill">Proof server: checking…</span>
+      </div>
     </div>
   </header>
 
   <main>
+    <!-- Policy Panel -->
     <section id="policy-panel">
-      <h2>Fairness Policy</h2>
+      <h2>Fairness policy</h2>
       <ul id="policy-list">
         <li>Loading policy…</li>
       </ul>
       <p id="policy-hash" class="hint"></p>
     </section>
 
+    <!-- Screening Panel -->
     <section id="screening-panel">
       <h2>Screening</h2>
-
       <label for="required-skills">Required skills (comma-separated)</label>
-      <input
-        type="text"
-        id="required-skills"
-        placeholder="python, react, sql"
-      />
-
+      <input type="text" id="required-skills" placeholder="python, react, sql" />
       <div class="button-row">
-        <button id="run-fair">Run Fair Model</button>
-        <button id="run-biased">Run Biased Model</button>
+        <button id="run-fair">Run fair model</button>
+        <button id="run-biased">Run biased model</button>
       </div>
-      <div id="results"></div>
+      <div id="results">
+        <div class="empty-state">
+          <span>Run a model to see candidate decisions.</span>
+        </div>
+      </div>
     </section>
 
+    <!-- Receipt Panel -->
     <section id="receipt-panel">
-      <h2>Fairness Receipt</h2>
-      <div id="receipt-output">No receipt yet.</div>
+      <h2>Fairness receipt</h2>
+      <div id="receipt-output">
+        <div class="empty-state">
+          <span>No receipt yet.</span>
+        </div>
+      </div>
     </section>
   </main>
 
