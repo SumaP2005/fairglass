@@ -48,6 +48,11 @@ The proof step is controlled by the MOCK_PROOF environment variable.
 Windows: `set MOCK_PROOF=0` (cmd) or `$env:MOCK_PROOF="0"` (PowerShell).
 Linux/Mac: `MOCK_PROOF=0 python app.py`.
 
+`CONTRACT_ADDRESS` is the deployed FairGlass contract. Empty by default,
+because nothing is deployed yet. The real path refuses to run without it and
+says so, rather than failing somewhere inside the SDK. Set it once Lastos
+publishes the address, and the backend passes it down to the bridge.
+
 `PROOF_SERVER_URL` sets where the proof server lives, default
 `http://localhost:6300`. The backend uses it for the health check and passes it
 down to the bridge, so if Lastos hosts the proof server instead of each of us

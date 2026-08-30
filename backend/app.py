@@ -53,6 +53,11 @@ POLICY_HASH = "0x" + hashlib.sha256(
 MOCK_PROOF = os.environ.get("MOCK_PROOF", "1") == "1"
 PROOF_SERVER_URL = os.environ.get("PROOF_SERVER_URL", "http://localhost:6300")
 
+# Address of the deployed FairGlass contract. Empty until Lastos deploys.
+# Handed to the bridge the same way PROOF_SERVER_URL is, so the address lives
+# in one place rather than being hardcoded in prove.js.
+CONTRACT_ADDRESS = os.environ.get("CONTRACT_ADDRESS", "").strip()
+
 # The role being hired for. Not part of the fairness policy: these are all
 # allowed attributes, so changing them cannot make a decision unfair.
 DEFAULT_REQUIRED_SKILLS = ["python", "react", "sql"]
@@ -238,6 +243,18 @@ def real_proof(model, decisions, commitment=None, candidate_id=None):
         "candidateMetrics": witness_payload(decisions, commitment, candidate_id),
     }
     ts = int(time.time())
+    if not CONTRACT_ADDRESS:
+        return {
+            "verified": False,
+            "policyHash": POLICY_HASH,
+            "model": model,
+            "proofMode": "real",
+            "reason": (
+                "CONTRACT_ADDRESS is not set. Deploy the contract and set it, "
+                "or run without MOCK_PROOF=0 to use mock mode."
+            ),
+            "timestamp": ts,
+        }
     try:
         result = subprocess.run(
             ["node", BRIDGE_PATH],
@@ -245,7 +262,11 @@ def real_proof(model, decisions, commitment=None, candidate_id=None):
             capture_output=True,
             text=True,
             timeout=180,
-            env={**os.environ, "PROOF_SERVER_URL": PROOF_SERVER_URL},
+            env={
+                **os.environ,
+                "PROOF_SERVER_URL": PROOF_SERVER_URL,
+                "CONTRACT_ADDRESS": CONTRACT_ADDRESS,
+            },
         )
     except (subprocess.TimeoutExpired, FileNotFoundError) as e:
         return {
@@ -397,6 +418,8 @@ def health():
         "proofMode": "mock" if MOCK_PROOF else "real",
         "proofServerUrl": PROOF_SERVER_URL,
         "proofServer": proof_server_status(),
+        "contractAddress": CONTRACT_ADDRESS or None,
+        "contractDeployed": bool(CONTRACT_ADDRESS),
     })
 
 

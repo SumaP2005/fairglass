@@ -49,7 +49,7 @@ cd backend && venv\Scripts\python test_backend.py
 cd contract/bridge && npm run smoke
 ```
 
-Expect 56 and 9, both ending "All checks passed."
+Expect 60 and 9, both ending "All checks passed."
 
 **Browser setup:**
 

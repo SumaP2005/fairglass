@@ -33,6 +33,10 @@ const BIAS_REASON =
 const PROOF_SERVER_URL =
   process.env.PROOF_SERVER_URL || "http://localhost:6300";
 
+// Handed down by backend/app.py. The backend refuses the real path when this
+// is empty, so by the time prove.js runs for real it is always populated.
+const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "";
+
 // Set to false once the real submitDecision call below is implemented.
 const BRIDGE_IS_STUB = true;
 
@@ -87,7 +91,8 @@ async function submitDecision({ policyHash, decision, candidateMetrics }) {
     //        getCurrentTimestamp()  -> BigInt(Math.floor(Date.now() / 1000))
     //      Note the bigints. The circuit takes Uint<32>, and the runtime
     //      rejects plain JS numbers there.
-    //   3. call submitDecision(decision) on the deployed contract
+    //   3. findDeployedContract at CONTRACT_ADDRESS (above), then call
+    //      submitDecision(decision) on it
     //   4. return the real receipt id and tx hash below
     // Keep the return shape identical or the Python side breaks.
     const stamp = Date.now().toString(16);

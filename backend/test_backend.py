@@ -217,6 +217,25 @@ check("unreachable proof server reports down", down.startswith("down"))
 check("health still returns 200 when proof server is down",
       client.get("/health").status_code == 200)
 
+# --- Contract address plumbing --------------------------------------------
+check("health reports contract deployment state", "contractDeployed" in health)
+check("no contract address is reported as not deployed",
+      health["contractDeployed"] is bool(app_module.CONTRACT_ADDRESS))
+
+# The real path must refuse loudly when no contract exists, rather than
+# handing the bridge an empty address and surfacing a confusing SDK error.
+_saved_mock = app_module.MOCK_PROOF
+_saved_addr = app_module.CONTRACT_ADDRESS
+app_module.MOCK_PROOF = False
+app_module.CONTRACT_ADDRESS = ""
+no_addr = client.post("/screen?model=fair").get_json()["receipt"]
+app_module.MOCK_PROOF = _saved_mock
+app_module.CONTRACT_ADDRESS = _saved_addr
+print(f"real mode with no address: {no_addr.get('reason')}")
+check("real path refuses without a contract address", no_addr["verified"] is False)
+check("the refusal names CONTRACT_ADDRESS",
+      "CONTRACT_ADDRESS" in (no_addr.get("reason") or ""))
+
 # --- CORS: the frontend runs on a different port than this service --------
 cors = client.post("/screen?model=fair", headers={"Origin": "http://localhost:8080"})
 check("CORS allows the frontend origin",
